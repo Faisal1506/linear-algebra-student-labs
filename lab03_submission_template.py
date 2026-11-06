@@ -80,8 +80,20 @@ def lu_factorisation(A):
     # construct arrays of zeros with dtype float
     L, U = np.zeros_like(A, dtype=float), np.zeros_like(A, dtype=float)
 
-    # TODO: fill in L and U
-
+    for i in range(n):
+                L[i, i] = 1
+        
+                for j in range(n):
+                    if i<=j:
+                        total = 0 
+                        for k in range(i):
+                            total += L[i, k] * U[k, j]
+                        U[i,j] = A[i,j] - total
+                    else:
+                        total = 0 
+                        for k in range(j):
+                            total += L[i, k] * U[k, j]
+                        L[i,j] = (A[i,j]-total)/U[j,j]
     return L, U
 
 
@@ -183,12 +195,31 @@ def runtime_comparison():
     to "plot.png" (the autograder looks for this exact filename).
     """
     # TODO: implement the timing loop and plot, e.g.
-    # import time
-    # from matplotlib import pyplot as plt
+    import time
+    from matplotlib import pyplot as plt
     #
-    # sizes = [2**j for j in range(1, 8)]
-    # ...
-    # plt.savefig("plot.png")
+    sizes = [2**j for j in range(1, 8)]
+    lu_time=[]
+    ga_time=[]
+    for n in sizes:
+        A, B, _ = generate_safe_system(n)
+
+        lu_start =  time.perf_counter()
+        lu_factorisation(A)
+        lu_end = time.perf_counter()
+        lu_time.append(lu_end-lu_start)
+
+        ga_start = time.perf_counter()
+        gaussian_elimination(A, B)
+        ga_end = time.perf_counter()
+        ga_time.append(ga_end-ga_start)
+
+    plt.loglog(sizes, lu_time, label="LU Factorisation")
+    plt.loglog(sizes, ga_time, label="Gaussian Elimination")
+    plt.xlabel("Matrix size of n")
+    plt.ylabel("Time(s)")
+    plt.legend()
+    plt.savefig("plot.png")
 
 
 if __name__ == "__main__":
